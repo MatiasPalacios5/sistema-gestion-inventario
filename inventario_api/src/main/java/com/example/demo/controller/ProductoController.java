@@ -73,6 +73,28 @@ public class ProductoController {
     }
 
     /**
+     * Realiza una venta rápida de un producto.
+     * <p>
+     * Endpoint: PUT /productos/{id}/vender
+     *
+     * @param id Identificador del producto a vender.
+     * @return El producto actualizado o error si no hay stock/no existe.
+     */
+    @PutMapping("/{id}/vender")
+    public ResponseEntity<?> venderProducto(@PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "1") int cantidad) {
+        try {
+            Producto producto = productoService.venderProducto(id, cantidad);
+            return ResponseEntity.ok(producto);
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("no encontrado")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    /**
      * Elimina un producto por su ID.
      * <p>
      * Endpoint: DELETE /productos/{id}

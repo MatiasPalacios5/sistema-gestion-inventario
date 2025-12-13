@@ -44,4 +44,31 @@ public class ProductoServiceImpl implements ProductoService {
         }
         return false;
     }
+
+    /**
+     * Implementación de la lógica de venta.
+     * Busca el producto, valida que exista stock disponible (> 0)
+     * y decrementa la cantidad.
+     *
+     * @param id ID del producto.
+     * @return El producto actualizado.
+     * @throws RuntimeException si el producto no existe o no hay stock.
+     */
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public Producto venderProducto(Long id, int cantidad) {
+        if (cantidad <= 0) {
+            throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
+        }
+
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
+
+        if (producto.getStock() < cantidad) {
+            throw new RuntimeException("Stock insuficiente para realizar la venta");
+        }
+
+        producto.setStock(producto.getStock() - cantidad);
+        return productoRepository.save(producto);
+    }
 }

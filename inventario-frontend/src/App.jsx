@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import ProductoForm from './components/ProductoForm'
+import ProductoItem from './components/ProductoItem'
 import './App.css'
 
 function App() {
@@ -10,7 +11,7 @@ function App() {
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/productos', {
+      const response = await axios.get('/productos', {
         auth: {
           username: 'admin',
           password: '1234'
@@ -29,11 +30,30 @@ function App() {
     fetchProductos()
   }, [])
 
+  const handleVender = async (id, cantidad) => {
+    try {
+      await axios.put(`/productos/${id}/vender?cantidad=${cantidad}`, {}, {
+        auth: {
+          username: 'admin',
+          password: '1234'
+        }
+      })
+      fetchProductos()
+    } catch (err) {
+      if (err.response && err.response.status === 400) {
+        alert(err.response.data)
+      } else {
+        console.error("Error selling product:", err)
+        alert("Error al registrar la venta.")
+      }
+    }
+  }
+
   const handleDelete = async (id) => {
     if (!window.confirm("¿Estás seguro de que deseas eliminar este producto?")) return
 
     try {
-      await axios.delete(`http://localhost:8080/productos/${id}`, {
+      await axios.delete(`/productos/${id}`, {
         auth: {
           username: 'admin',
           password: '1234'
@@ -60,27 +80,15 @@ function App() {
       {error && <div className="text-error text-center" style={{ marginBottom: '1rem' }}>{error}</div>}
 
       {!loading && !error && (
-        <div className="card">
-          <ul>
-            {productos.map((producto, index) => (
-              <li key={producto.id || index} className="product-item">
-                <div className="product-info">
-                  <strong>{producto.nombre}</strong>
-                  <div className="product-details">
-                    <span>Stock: {producto.stock}</span>
-                    <span>Precio: ${producto.precio}</span>
-                  </div>
-                </div>
-
-                <button
-                  className="btn-delete"
-                  onClick={() => handleDelete(producto.id)}
-                >
-                  Eliminar
-                </button>
-              </li>
-            ))}
-          </ul>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+          {productos.map((producto, index) => (
+            <ProductoItem
+              key={producto.id || index}
+              producto={producto}
+              onVender={handleVender}
+              onEliminar={handleDelete}
+            />
+          ))}
         </div>
       )}
     </div>

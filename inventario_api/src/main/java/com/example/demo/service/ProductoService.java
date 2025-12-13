@@ -12,4 +12,13 @@ public interface ProductoService {
     Optional<Producto> actualizar(Long id, Producto productoDetalles);
 
     boolean eliminar(Long id);
+
+    /**
+     * Realiza la venta de una unidad de un producto.
+     * Decrementa el stock en 1 si es posible.
+     *
+     * @param id ID del producto a vender.
+     * @return El producto con el stock actualizado.
+     */
+    Producto venderProducto(Long id, int cantidad);
 }
