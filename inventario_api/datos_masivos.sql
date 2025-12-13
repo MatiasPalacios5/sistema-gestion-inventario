@@ -1,0 +1,10 @@
+INSERT INTO producto (nombre, precio, stock) VALUES ('Laptop Gamer Legion 5', 1299.99, 15);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Mouse Inalámbrico Logitech MW3', 29.50, 50);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Monitor 4K Dell UltraSharp', 450.00, 10);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Teclado Mecánico Keychron K2', 89.99, 30);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Auriculares Sony WH-1000XM5', 349.00, 20);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Smartphone Galaxy S23 Ultra', 1199.99, 25);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Tablet iPad Air 5', 599.00, 12);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Disco SSD Samsung 980 Pro 1TB', 109.99, 40);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Tarjeta Gráfica NVIDIA RTX 3060', 329.50, 8);
+INSERT INTO producto (nombre, precio, stock) VALUES ('Altavoces Bluetooth JBL Flip 6', 129.95, 35);

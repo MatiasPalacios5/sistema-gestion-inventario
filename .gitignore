@@ -1,0 +1,28 @@
+# --- Maven & Java ---
+target/
+*.class
+.mvn/
+
+# --- Node.js & React ---
+node_modules/
+dist/
+.env
+.env.local
+
+# --- IDEs (Configuraciones de tu editor) ---
+.vscode/
+.idea/
+*.iml
+
+# --- Base de Datos & Logs ---
+*.log
+*.mv.db
+*.trace.db
+
+# --- Seguridad (Opcional) ---
+# Descomenta la siguiente linea si tu application.properties tiene claves reales
+# inventario_api/src/main/resources/application.properties
+
+# --- Sistema Operativo ---
+.DS_Store
+Thumbs.db

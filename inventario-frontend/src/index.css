@@ -1,0 +1,173 @@
+:root {
+  --primary: #6366f1;
+  /* Indigo suave */
+  --primary-hover: #4f46e5;
+  --danger: #ef4444;
+  /* Rojo alerta */
+  --danger-hover: #dc2626;
+  --bg-color: #f8fafc;
+  /* Gris muy claro */
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  margin: 0;
+  padding: 2rem;
+  line-height: 1.5;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  color: var(--text-main);
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+/* Estilos de Tarjetas (Card) */
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+  border: 1px solid var(--border);
+}
+
+/* Estilos de Formularios */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  /* Importante para que el padding no rompa el ancho */
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Botones */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background-color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-delete {
+  background-color: transparent;
+  color: var(--danger);
+  border: 1px solid var(--border);
+  /* Better visibility than danger border sometimes */
+  padding: 0.5rem 1rem;
+}
+
+.btn-delete:hover {
+  background-color: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+
+/* Lista de Productos */
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.product-item:last-child {
+  border-bottom: none;
+}
+
+.product-info strong {
+  display: block;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.product-details {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  display: flex;
+  gap: 1rem;
+}
+
+/* Utilities */
+.text-center {
+  textAlign: center;
+}
+
+.text-success {
+  color: #059669;
+  background-color: #d1fae5;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.text-error {
+  color: var(--danger);
+  background-color: #fee2e2;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.loading {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
