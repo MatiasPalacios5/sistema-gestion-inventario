@@ -73,6 +73,10 @@ function App() {
     <div className="container">
       <h1>Inventario de Productos</h1>
 
+      <div style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.2rem' }} className="text-muted">
+        Valor Total del Inventario: {productos.reduce((acc, curr) => acc + (curr.precio * curr.stock), 0).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
+      </div>
+
       <ProductoForm onSuccess={fetchProductos} />
 
       {loading && <p className="loading">Cargando productos...</p>}

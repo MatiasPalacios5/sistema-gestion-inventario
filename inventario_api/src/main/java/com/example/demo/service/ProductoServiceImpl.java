@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import com.example.demo.model.Producto;
 import com.example.demo.repository.ProductoRepository;
+import com.example.demo.model.Venta;
+import com.example.demo.repository.VentaRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +13,11 @@ import java.util.Optional;
 public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
+    private final VentaRepository ventaRepository;
 
-    public ProductoServiceImpl(ProductoRepository productoRepository) {
+    public ProductoServiceImpl(ProductoRepository productoRepository, VentaRepository ventaRepository) {
         this.productoRepository = productoRepository;
+        this.ventaRepository = ventaRepository;
     }
 
     @Override
@@ -69,6 +73,18 @@ public class ProductoServiceImpl implements ProductoService {
         }
 
         producto.setStock(producto.getStock() - cantidad);
-        return productoRepository.save(producto);
+        Producto productoActualizado = productoRepository.save(producto);
+
+        // Registrar la venta
+        Venta venta = new Venta();
+        venta.setNombreProducto(producto.getNombre());
+        venta.setCantidadVendida(cantidad);
+        double precioUnitario = producto.getPrecio().doubleValue();
+        venta.setPrecioUnitario(precioUnitario);
+        venta.setMontoTotal(cantidad * precioUnitario);
+
+        ventaRepository.save(venta);
+
+        return productoActualizado;
     }
 }
