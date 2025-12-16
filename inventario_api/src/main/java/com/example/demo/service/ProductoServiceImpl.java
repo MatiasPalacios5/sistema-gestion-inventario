@@ -84,19 +84,21 @@ public class ProductoServiceImpl implements ProductoService {
             throw new RuntimeException("Stock insuficiente para realizar la venta");
         }
 
-        producto.setStock(producto.getStock() - cantidad);
-        Producto productoActualizado = productoRepository.save(producto);
-
-        // Registrar la venta
-        Venta venta = new Venta();
-        venta.setNombreProducto(producto.getNombre());
-        venta.setCantidadVendida(cantidad);
+        // 1. Capturar datos para la venta
         double precioUnitario = producto.getPrecio().doubleValue();
-        venta.setPrecioUnitario(precioUnitario);
-        venta.setMontoTotal(cantidad * precioUnitario);
+        double montoTotal = precioUnitario * cantidad;
 
-        ventaRepository.save(venta);
+        // 2. Crear y guardar el registro de venta
+        Venta nuevaVenta = new Venta();
+        nuevaVenta.setNombreProducto(producto.getNombre());
+        nuevaVenta.setCantidadVendida(cantidad);
+        nuevaVenta.setPrecioUnitario(precioUnitario);
+        nuevaVenta.setMontoTotal(montoTotal);
 
-        return productoActualizado;
+        ventaRepository.save(nuevaVenta);
+
+        // 3. Actualizar el stock del producto
+        producto.setStock(producto.getStock() - cantidad);
+        return productoRepository.save(producto);
     }
 }

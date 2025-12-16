@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import ProductoForm from './components/ProductoForm'
 import ProductoItem from './components/ProductoItem'
+import VentaHistorial from './components/VentaHistorial'
 import './App.css'
 
 function App() {
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [refreshHistory, setRefreshHistory] = useState(0)
 
   const fetchProductos = async () => {
     try {
@@ -39,6 +41,7 @@ function App() {
         }
       })
       fetchProductos()
+      setRefreshHistory(prev => prev + 1)
     } catch (err) {
       if (err.response && err.response.status === 400) {
         alert(err.response.data)
@@ -111,6 +114,8 @@ function App() {
           ))}
         </div>
       )}
+
+      <VentaHistorial shouldRefresh={refreshHistory} />
     </div>
   )
 }
