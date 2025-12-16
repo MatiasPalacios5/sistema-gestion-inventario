@@ -3,9 +3,12 @@ import axios from 'axios'
 import ProductoForm from './components/ProductoForm'
 import ProductoItem from './components/ProductoItem'
 import VentaHistorial from './components/VentaHistorial'
+import Login from './components/Login'
+import { useAuth } from './context/AuthContext'
 import './App.css'
 
 function App() {
+  const { isAuthenticated, logout } = useAuth()
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -15,12 +18,7 @@ function App() {
   const fetchProductos = async () => {
     try {
       const url = searchTerm ? `/productos?search=${searchTerm}` : '/productos'
-      const response = await axios.get(url, {
-        auth: {
-          username: 'admin',
-          password: '1234'
-        }
-      })
+      const response = await axios.get(url)
       setProductos(response.data)
       setLoading(false)
     } catch (err) {
@@ -31,17 +29,14 @@ function App() {
   }
 
   useEffect(() => {
-    fetchProductos()
-  }, [searchTerm])
+    if (isAuthenticated) {
+      fetchProductos()
+    }
+  }, [searchTerm, isAuthenticated])
 
   const handleVender = async (id, cantidad) => {
     try {
-      await axios.put(`/productos/${id}/vender?cantidad=${cantidad}`, {}, {
-        auth: {
-          username: 'admin',
-          password: '1234'
-        }
-      })
+      await axios.put(`/productos/${id}/vender?cantidad=${cantidad}`, {})
       fetchProductos()
       setRefreshHistory(prev => prev + 1)
     } catch (err) {
@@ -58,12 +53,7 @@ function App() {
     if (!window.confirm("¿Estás seguro de que deseas eliminar este producto?")) return
 
     try {
-      await axios.delete(`/productos/${id}`, {
-        auth: {
-          username: 'admin',
-          password: '1234'
-        }
-      })
+      await axios.delete(`/productos/${id}`)
       // Recargar lista tras eliminación exitosa
       fetchProductos()
     } catch (err) {
@@ -74,12 +64,7 @@ function App() {
 
   const handleActualizar = async (id, productoActualizado) => {
     try {
-      await axios.put(`/productos/${id}`, productoActualizado, {
-        auth: {
-          username: 'admin',
-          password: '1234'
-        }
-      })
+      await axios.put(`/productos/${id}`, productoActualizado)
       fetchProductos()
     } catch (err) {
       console.error("Error updating product:", err)
@@ -89,9 +74,18 @@ function App() {
 
 
 
+  if (!isAuthenticated) {
+    return <Login />
+  }
+
   return (
     <div className="container">
-      <h1>Inventario de Productos</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h1 style={{ margin: 0 }}>Inventario de Productos</h1>
+        <button onClick={logout} style={{ backgroundColor: '#64748b', color: 'white' }}>
+          Logout
+        </button>
+      </div>
 
       <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
         <input
