@@ -1,13 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 
-const ProductoForm = ({ onSuccess }) => {
+const ProductoForm = ({ onSuccess, productoAEditar, onActualizar }) => {
     const [nombre, setNombre] = useState('')
     const [cantidad, setCantidad] = useState('')
     const [precio, setPrecio] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [successMsg, setSuccessMsg] = useState(null)
+
+    useEffect(() => {
+        if (productoAEditar) {
+            setNombre(productoAEditar.nombre)
+            setCantidad(productoAEditar.stock) // Nota: el backend usa 'stock', el form usa 'cantidad'
+            setPrecio(productoAEditar.precio)
+        }
+    }, [productoAEditar])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -16,47 +24,57 @@ const ProductoForm = ({ onSuccess }) => {
         setSuccessMsg(null)
 
         // Validación básica
-        if (!nombre || !cantidad || !precio) {
+        if (!nombre || cantidad === '' || precio === '') {
             setError("Todos los campos son obligatorios")
             setLoading(false)
             return
         }
 
+        const payload = {
+            nombre,
+            stock: parseInt(cantidad),
+            precio: parseFloat(precio)
+        }
+
         try {
-            // Mapeamos 'cantidad' a 'stock' para la API
-            const payload = {
-                nombre,
-                stock: parseInt(cantidad), // Asegurar que sea número
-                precio: parseFloat(precio) // Asegurar que sea número con decimales
+            if (productoAEditar) {
+                // Modo Edición
+                await onActualizar(productoAEditar.id, payload)
+                // En modo edición, no limpiamos el form necesariamente, pero podemos notificar éxito
+                // La responsabilidad de cerrar el form recae en el padre (ProductoItem) si es necesario,
+                // o onSuccess puede usarse para cerrar el modo edición.
+                if (onSuccess) onSuccess()
+            } else {
+                // Modo Creación
+                await axios.post('http://localhost:8080/productos', payload, {
+                    auth: {
+                        username: 'admin',
+                        password: '1234'
+                    }
+                })
+
+                setSuccessMsg("¡Producto creado con éxito!")
+                // Limpiar formulario solo en creación
+                setNombre('')
+                setCantidad('')
+                setPrecio('')
+
+                if (onSuccess) onSuccess()
             }
 
-            await axios.post('http://localhost:8080/productos', payload, {
-                auth: {
-                    username: 'admin',
-                    password: '1234'
-                }
-            })
-
-            setSuccessMsg("¡Producto creado con éxito!")
-            // Limpiar formulario
-            setNombre('')
-            setCantidad('')
-            setPrecio('')
-
-            // Notificar al padre si existe la función
-            if (onSuccess) onSuccess()
-
         } catch (err) {
-            console.error("Error creating product:", err)
-            setError("Error al crear el producto. Verifique los datos o la conexión.")
+            console.error("Error saving product:", err)
+            setError("Error al guardar el producto. Verifique los datos o la conexión.")
         } finally {
             setLoading(false)
         }
     }
 
     return (
-        <div className="card">
-            <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Nuevo Producto</h2>
+        <div className="card" style={productoAEditar ? { border: 'none', shadow: 'none', padding: 0, margin: 0 } : {}}>
+            <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                {productoAEditar ? 'Editar Producto' : 'Nuevo Producto'}
+            </h2>
 
             {successMsg && <div className="text-success text-center">{successMsg}</div>}
             {error && <div className="text-error text-center">{error}</div>}
@@ -101,17 +119,27 @@ const ProductoForm = ({ onSuccess }) => {
                     />
                 </div>
 
-                <button
-                    type="submit"
-                    className="btn-primary"
-                    disabled={loading}
-                >
-                    {loading ? 'Guardando...' : 'Crear Producto'}
-                </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button
+                        type="submit"
+                        className="btn-primary"
+                        disabled={loading}
+                    >
+                        {loading ? 'Guardando...' : (productoAEditar ? 'Guardar Cambios' : 'Crear Producto')}
+                    </button>
+                    {productoAEditar && onSuccess && (
+                        <button
+                            type="button"
+                            onClick={onSuccess} // Usamos onSuccess como "Cancel/Close" también
+                            style={{ marginTop: '1rem', backgroundColor: '#94a3b8', color: 'white', border: 'none' }}
+                        >
+                            Cancelar
+                        </button>
+                    )}
+                </div>
             </form>
         </div>
     )
 }
 
 export default ProductoForm
-

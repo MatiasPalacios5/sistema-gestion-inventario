@@ -1,7 +1,19 @@
 import { useState } from 'react'
+import ProductoForm from './ProductoForm'
 
-function ProductoItem({ producto, onVender, onEliminar }) {
+function ProductoItem({ producto, onVender, onEliminar, onActualizar }) {
     const [cantidad, setCantidad] = useState(1)
+    const [isEditing, setIsEditing] = useState(false)
+
+    if (isEditing) {
+        return (
+            <ProductoForm
+                productoAEditar={producto}
+                onActualizar={onActualizar}
+                onSuccess={() => setIsEditing(false)}
+            />
+        )
+    }
 
     return (
         <div className="card" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -30,7 +42,8 @@ function ProductoItem({ producto, onVender, onEliminar }) {
                             cursor: 'pointer',
                             borderRadius: '8px',
                             fontWeight: 600,
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            flex: 1
                         }}
                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e0e7ff'}
                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -40,13 +53,33 @@ function ProductoItem({ producto, onVender, onEliminar }) {
                     </button>
                 </div>
 
-                <button
-                    className="btn-delete"
-                    onClick={() => onEliminar(producto.id)}
-                    style={{ width: '100%' }}
-                >
-                    Eliminar
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        style={{
+                            backgroundColor: 'transparent',
+                            color: 'var(--text-main)',
+                            border: '1px solid var(--border)',
+                            padding: '0.5rem 1rem',
+                            cursor: 'pointer',
+                            borderRadius: '8px',
+                            fontWeight: 600,
+                            transition: 'all 0.2s',
+                            flex: 1
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                        Editar
+                    </button>
+                    <button
+                        className="btn-delete"
+                        onClick={() => onEliminar(producto.id)}
+                        style={{ flex: 1 }}
+                    >
+                        Eliminar
+                    </button>
+                </div>
             </div>
         </div>
     )

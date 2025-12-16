@@ -41,6 +41,18 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
+    public Producto actualizarProducto(Long id, Producto productoDetalles) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
+
+        producto.setNombre(productoDetalles.getNombre());
+        producto.setPrecio(productoDetalles.getPrecio());
+        producto.setStock(productoDetalles.getStock());
+
+        return productoRepository.save(producto);
+    }
+
+    @Override
     public boolean eliminar(Long id) {
         if (productoRepository.existsById(id)) {
             productoRepository.deleteById(id);

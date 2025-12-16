@@ -20,5 +20,14 @@ public interface ProductoService {
      * @param id ID del producto a vender.
      * @return El producto con el stock actualizado.
      */
+    /**
+     * Actualiza todos los datos de un producto.
+     *
+     * @param id               ID del producto a actualizar.
+     * @param productoDetalles Objeto con los nuevos datos.
+     * @return El producto actualizado.
+     */
+    Producto actualizarProducto(Long id, Producto productoDetalles);
+
     Producto venderProducto(Long id, int cantidad);
 }

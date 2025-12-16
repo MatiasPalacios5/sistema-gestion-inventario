@@ -67,6 +67,21 @@ function App() {
     }
   }
 
+  const handleActualizar = async (id, productoActualizado) => {
+    try {
+      await axios.put(`/productos/${id}`, productoActualizado, {
+        auth: {
+          username: 'admin',
+          password: '1234'
+        }
+      })
+      fetchProductos()
+    } catch (err) {
+      console.error("Error updating product:", err)
+      alert("Error al actualizar el producto.")
+    }
+  }
+
 
 
   return (
@@ -91,6 +106,7 @@ function App() {
               producto={producto}
               onVender={handleVender}
               onEliminar={handleDelete}
+              onActualizar={handleActualizar}
             />
           ))}
         </div>

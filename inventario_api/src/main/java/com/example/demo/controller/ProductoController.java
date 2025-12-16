@@ -67,9 +67,12 @@ public class ProductoController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Producto> actualizar(@PathVariable Long id, @RequestBody Producto productoDetalles) {
-        return productoService.actualizar(id, productoDetalles)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            Producto productoActualizado = productoService.actualizarProducto(id, productoDetalles);
+            return ResponseEntity.ok(productoActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**
