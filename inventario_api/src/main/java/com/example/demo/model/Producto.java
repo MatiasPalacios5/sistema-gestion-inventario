@@ -6,6 +6,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 import java.math.BigDecimal;
 
 /**
@@ -51,13 +53,49 @@ public class Producto {
     private Integer stock;
 
     /**
+     * Precio de costo del producto.
+     */
+    @Column(name = "precio_costo")
+    private Double precioCosto;
+
+    /**
+     * Stock mínimo para alertas. Valor por defecto 5.
+     */
+    @Column(name = "stock_minimo")
+    private Integer stockMinimo = 5;
+
+    @ManyToOne(cascade = { jakarta.persistence.CascadeType.PERSIST, jakarta.persistence.CascadeType.MERGE })
+    @jakarta.persistence.JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
+    @ManyToOne(cascade = { jakarta.persistence.CascadeType.PERSIST, jakarta.persistence.CascadeType.MERGE })
+    @jakarta.persistence.JoinColumn(name = "marca_id")
+    private Marca marca;
+
+    /**
+     * Calcula el margen de ganancia en porcentaje.
+     * 
+     * @return Porcentaje de ganancia o 0 si no hay costo definido.
+     */
+    @jakarta.persistence.Transient
+    public Double getMargenGanancia() {
+        if (precioCosto == null || precioCosto == 0) {
+            return 0.0;
+        }
+        if (precio == null) {
+            return 0.0;
+        }
+        return ((precio.doubleValue() - precioCosto) / precioCosto) * 100;
+    }
+
+    /**
      * Constructor vacío requerido por JPA.
      */
     public Producto() {
     }
 
     /**
-     * Constructor para crear instancias sin ID (para inserción).
+     * Constructor simple (existente).
      */
     public Producto(String nombre, BigDecimal precio, Integer stock) {
         this.nombre = nombre;
@@ -97,5 +135,37 @@ public class Producto {
 
     public void setStock(Integer stock) {
         this.stock = stock;
+    }
+
+    public Double getPrecioCosto() {
+        return precioCosto;
+    }
+
+    public void setPrecioCosto(Double precioCosto) {
+        this.precioCosto = precioCosto;
+    }
+
+    public Integer getStockMinimo() {
+        return stockMinimo;
+    }
+
+    public void setStockMinimo(Integer stockMinimo) {
+        this.stockMinimo = stockMinimo;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
+
+    public Marca getMarca() {
+        return marca;
+    }
+
+    public void setMarca(Marca marca) {
+        this.marca = marca;
     }
 }

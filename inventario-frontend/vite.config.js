@@ -8,7 +8,9 @@ export default defineConfig({
     proxy: {
       '/productos': 'http://localhost:8080',
       '/ventas': 'http://localhost:8080',
-      '/auth': 'http://localhost:8080'
+      '/auth': 'http://localhost:8080',
+      '/categorias': 'http://localhost:8080',
+      '/marcas': 'http://localhost:8080'
     }
   }
 })

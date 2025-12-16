@@ -34,6 +34,12 @@ public class ProductoControllerTest {
         @MockBean
         private ProductoService productoService;
 
+        @MockBean
+        private com.example.demo.config.JwtUtils jwtUtils;
+
+        @MockBean
+        private com.example.demo.service.UserDetailsServiceImpl userDetailsService;
+
         @Autowired
         private ObjectMapper objectMapper;
 

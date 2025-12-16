@@ -9,15 +9,27 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [loadingAuth, setLoadingAuth] = useState(true);
+
+    // Función para configurar el token en Axios
+    const setupAxiosInterceptor = (token) => {
+        if (token) {
+            axios.defaults.headers.common['Authorization'] = token;
+        } else {
+            delete axios.defaults.headers.common['Authorization'];
+        }
+    };
 
     useEffect(() => {
         // Verificar si hay un token al cargar la app
         const token = localStorage.getItem('token');
         if (token) {
+            setupAxiosInterceptor(token);
             setIsAuthenticated(true);
         }
+        setLoadingAuth(false);
 
-        // Configurar interceptor de Axios
+        // Configurar interceptor de Axios como respaldo
         const interceptor = axios.interceptors.request.use(
             config => {
                 const token = localStorage.getItem('token');
@@ -31,7 +43,6 @@ export const AuthProvider = ({ children }) => {
             }
         );
 
-        // Limpiar interceptor al desmontar (aunque AuthProvider suele ser permanente)
         return () => {
             axios.interceptors.request.eject(interceptor);
         };
@@ -47,6 +58,8 @@ export const AuthProvider = ({ children }) => {
             if (response.data && response.data.token) {
                 const token = `Bearer ${response.data.token}`;
                 localStorage.setItem('token', token);
+                // Configuración inmediata
+                setupAxiosInterceptor(token);
                 setIsAuthenticated(true);
                 return true;
             }
@@ -59,11 +72,12 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         localStorage.removeItem('token');
+        setupAxiosInterceptor(null);
         setIsAuthenticated(false);
     };
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, login, logout, loadingAuth }}>
             {children}
         </AuthContext.Provider>
     );

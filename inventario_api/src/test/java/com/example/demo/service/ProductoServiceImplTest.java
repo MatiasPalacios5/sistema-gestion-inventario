@@ -60,4 +60,54 @@ public class ProductoServiceImplTest {
                         venta.getPrecioUnitario() == 100.00 &&
                         venta.getMontoTotal() == 200.00));
     }
+
+    @Test
+    public void venderProducto_StockInsuficiente_DebeLanzarExcepcion() {
+        // Arrange
+        Long productoId = 1L;
+        int cantidadVenta = 10;
+        int stockInicial = 5; // Stock menor que la venta
+
+        Producto producto = new Producto("Escasez", new BigDecimal("50.00"), stockInicial);
+        producto.setId(productoId);
+
+        when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
+
+        // Act & Assert
+        org.junit.jupiter.api.Assertions.assertThrows(RuntimeException.class, () -> {
+            productoService.venderProducto(productoId, cantidadVenta);
+        }, "Stock insuficiente para realizar la venta");
+
+        // Verify no sale was saved
+        verify(ventaRepository, times(0)).save(any(Venta.class));
+    }
+
+    @Test
+    public void venderProducto_DebeRegistrarPrecioSnapshot() {
+        // Arrange
+        Long productoId = 2L;
+        int cantidadVenta = 1;
+        BigDecimal precioOriginal = new BigDecimal("1000.00");
+        int stockInicial = 5;
+
+        Producto producto = new Producto("Snapshot Item", precioOriginal, stockInicial);
+        producto.setId(productoId);
+
+        when(productoRepository.findById(productoId)).thenReturn(Optional.of(producto));
+        when(productoRepository.save(any(Producto.class))).thenReturn(producto);
+        when(ventaRepository.save(any(Venta.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        productoService.venderProducto(productoId, cantidadVenta);
+
+        // Assert
+        // Verificamos que la venta guardada tenga el precio original (1000)
+        verify(ventaRepository)
+                .save(org.mockito.ArgumentMatchers.argThat(venta -> venta.getPrecioUnitario() == 1000.00));
+
+        // Simular cambio de precio en el producto POSTERIOR a la venta no debería
+        // afectar la venta ya guardada
+        // (Esto es implícito por el diseño, pero confirmamos que se usó el valor
+        // numérico)
+    }
 }

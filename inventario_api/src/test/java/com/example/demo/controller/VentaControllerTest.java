@@ -29,6 +29,12 @@ public class VentaControllerTest {
     @MockBean
     private VentaRepository ventaRepository;
 
+    @MockBean
+    private com.example.demo.config.JwtUtils jwtUtils;
+
+    @MockBean
+    private com.example.demo.service.UserDetailsServiceImpl userDetailsService;
+
     @Test
     @WithMockUser(username = "admin", roles = "USER")
     public void obtenerTodasLasVentas_DebeRetornarListaConMontoTotal() throws Exception {

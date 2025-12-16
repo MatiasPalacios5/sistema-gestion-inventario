@@ -8,36 +8,50 @@ import { useAuth } from './context/AuthContext'
 import './App.css'
 
 function App() {
-  const { isAuthenticated, logout } = useAuth()
+  const { isAuthenticated, logout, loadingAuth } = useAuth()
   const [productos, setProductos] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [categorias, setCategorias] = useState([])
+  const [marcas, setMarcas] = useState([])
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [refreshHistory, setRefreshHistory] = useState(0)
   const [searchTerm, setSearchTerm] = useState('')
 
-  const fetchProductos = async () => {
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
     try {
-      const url = searchTerm ? `/productos?search=${searchTerm}` : '/productos'
-      const response = await axios.get(url)
-      setProductos(response.data)
-      setLoading(false)
+      const urlProducts = searchTerm ? `/productos?search=${searchTerm}` : '/productos'
+
+      const [prodRes, catRes, marRes] = await Promise.all([
+        axios.get(urlProducts),
+        axios.get('/categorias'),
+        axios.get('/marcas')
+      ])
+
+      setProductos(prodRes.data)
+      setCategorias(Array.isArray(catRes.data) ? catRes.data : [])
+      setMarcas(Array.isArray(marRes.data) ? marRes.data : [])
     } catch (err) {
-      console.error("Error fetching products:", err)
-      setError("Error al cargar los productos. Verifique las credenciales o el servidor.")
+      console.error("Error fetching data:", err)
+      setError("Error al cargar los datos del sistema. Por favor reintente.")
+    } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
+    if (loadingAuth) return;
+
     if (isAuthenticated) {
-      fetchProductos()
+      fetchData()
     }
-  }, [searchTerm, isAuthenticated])
+  }, [searchTerm, isAuthenticated, loadingAuth])
 
   const handleVender = async (id, cantidad) => {
     try {
       await axios.put(`/productos/${id}/vender?cantidad=${cantidad}`, {})
-      fetchProductos()
+      fetchData()
       setRefreshHistory(prev => prev + 1)
     } catch (err) {
       if (err.response && err.response.status === 400) {
@@ -55,7 +69,7 @@ function App() {
     try {
       await axios.delete(`/productos/${id}`)
       // Recargar lista tras eliminación exitosa
-      fetchProductos()
+      fetchData()
     } catch (err) {
       console.error("Error deleting product:", err)
       alert("Error al eliminar el producto. Inténtelo de nuevo.")
@@ -65,14 +79,16 @@ function App() {
   const handleActualizar = async (id, productoActualizado) => {
     try {
       await axios.put(`/productos/${id}`, productoActualizado)
-      fetchProductos()
+      fetchData()
     } catch (err) {
       console.error("Error updating product:", err)
       alert("Error al actualizar el producto.")
     }
   }
 
-
+  if (loadingAuth) {
+    return <div className="loading" style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Cargando sistema...</div>
+  }
 
   if (!isAuthenticated) {
     return <Login />
@@ -108,11 +124,20 @@ function App() {
         Valor Total del Inventario: {productos.reduce((acc, curr) => acc + (curr.precio * curr.stock), 0).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
       </div>
 
-      <ProductoForm onSuccess={fetchProductos} />
+      <ProductoForm
+        onSuccess={fetchData}
+        categorias={categorias}
+        marcas={marcas}
+      />
 
-      {loading && <p className="loading">Cargando productos...</p>}
+      {loading && <p className="loading" style={{ textAlign: 'center', margin: '2rem 0' }}>Cargando datos del sistema...</p>}
 
-      {error && <div className="text-error text-center" style={{ marginBottom: '1rem' }}>{error}</div>}
+      {error && (
+        <div className="text-error text-center" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          {error}
+          <button onClick={fetchData} className="btn-primary" style={{ maxWidth: '200px' }}>Reintentar</button>
+        </div>
+      )}
 
       {!loading && !error && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
@@ -123,6 +148,8 @@ function App() {
               onVender={handleVender}
               onEliminar={handleDelete}
               onActualizar={handleActualizar}
+              categorias={categorias}
+              marcas={marcas}
             />
           ))}
         </div>

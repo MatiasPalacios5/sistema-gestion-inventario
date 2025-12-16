@@ -7,12 +7,7 @@ const VentaHistorial = ({ shouldRefresh }) => {
 
     const fetchVentas = async () => {
         try {
-            const response = await axios.get('/ventas', {
-                auth: {
-                    username: 'admin',
-                    password: '1234'
-                }
-            })
+            const response = await axios.get('/ventas')
             setVentas(Array.isArray(response.data) ? response.data : [])
         } catch (error) {
             console.error("Error al cargar el historial de ventas:", error)
