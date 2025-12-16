@@ -101,4 +101,10 @@ public class ProductoServiceImpl implements ProductoService {
         producto.setStock(producto.getStock() - cantidad);
         return productoRepository.save(producto);
     }
+
+    @Override
+    public List<Producto> buscarPorNombre(String nombre) {
+        return productoRepository.findByNombreContainingIgnoreCase(nombre);
+    }
+
 }

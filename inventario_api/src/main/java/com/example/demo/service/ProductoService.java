@@ -30,4 +30,12 @@ public interface ProductoService {
     Producto actualizarProducto(Long id, Producto productoDetalles);
 
     Producto venderProducto(Long id, int cantidad);
+
+    /**
+     * Busca productos por nombre (parcial).
+     * 
+     * @param nombre Texto a buscar.
+     * @return Lista de productos que coinciden.
+     */
+    List<Producto> buscarPorNombre(String nombre);
 }

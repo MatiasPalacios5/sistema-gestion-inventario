@@ -10,10 +10,12 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [refreshHistory, setRefreshHistory] = useState(0)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const fetchProductos = async () => {
     try {
-      const response = await axios.get('/productos', {
+      const url = searchTerm ? `/productos?search=${searchTerm}` : '/productos'
+      const response = await axios.get(url, {
         auth: {
           username: 'admin',
           password: '1234'
@@ -30,7 +32,7 @@ function App() {
 
   useEffect(() => {
     fetchProductos()
-  }, [])
+  }, [searchTerm])
 
   const handleVender = async (id, cantidad) => {
     try {
@@ -90,6 +92,23 @@ function App() {
   return (
     <div className="container">
       <h1>Inventario de Productos</h1>
+
+      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+        <input
+          type="text"
+          placeholder="Buscar producto..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            width: '100%',
+            maxWidth: '400px',
+            padding: '0.75rem',
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            fontSize: '1rem'
+          }}
+        />
+      </div>
 
       <div style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.2rem' }} className="text-muted">
         Valor Total del Inventario: {productos.reduce((acc, curr) => acc + (curr.precio * curr.stock), 0).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}

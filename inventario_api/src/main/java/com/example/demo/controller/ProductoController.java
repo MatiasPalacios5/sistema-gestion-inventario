@@ -37,8 +37,19 @@ public class ProductoController {
      * 
      * @return Lista de todos los objetos Producto en la base de datos.
      */
+    /**
+     * Obtiene la lista de productos, opcionalmente filtrada por nombre.
+     * <p>
+     * Endpoint: GET /productos?search={nombre}
+     *
+     * @param search Término de búsqueda opcional.
+     * @return Lista de productos.
+     */
     @GetMapping
-    public List<Producto> obtenerTodos() {
+    public List<Producto> obtenerTodos(@RequestParam(required = false) String search) {
+        if (search != null && !search.isEmpty()) {
+            return productoService.buscarPorNombre(search);
+        }
         return productoService.obtenerTodos();
     }
 

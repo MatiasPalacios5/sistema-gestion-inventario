@@ -19,4 +19,13 @@ import org.springframework.stereotype.Repository;
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
     // Aquí se pueden definir métodos de consulta derivados (Query Methods)
     // Ej: List<Producto> findByNombre(String nombre);
+
+    /**
+     * Busca productos cuyo nombre contenga la cadena proporcionada,
+     * ignorando mayúsculas y minúsculas.
+     * 
+     * @param nombre Parte del nombre a buscar.
+     * @return Lista de productos encontrados.
+     */
+    java.util.List<Producto> findByNombreContainingIgnoreCase(String nombre);
 }
