@@ -28,19 +28,26 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        System.out.println("AuthTokenFilter: Processing " + request.getMethod() + " " + request.getRequestURI());
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateToken(jwt)) {
                 String username = jwtUtils.getUsernameFromToken(jwt);
+                System.out.println("AuthTokenFilter: Token válido. Usuario: " + username);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                System.out.println("AuthTokenFilter: Roles cargados: " + userDetails.getAuthorities());
+
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                System.out.println("AuthTokenFilter: No hay token o es inválido");
             }
         } catch (Exception e) {
+            System.out.println("AuthTokenFilter Error: " + e.getMessage());
             logger.error("Cannot set user authentication: {}", e);
         }
 

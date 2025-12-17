@@ -46,30 +46,34 @@ const VentaHistorial = ({ shouldRefresh }) => {
             ) : !isVentasArray || ventas.length === 0 ? (
                 <p className="text-center text-muted">No se han registrado ventas aún.</p>
             ) : (
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
-                                <th style={{ padding: '0.75rem' }}>Fecha/Hora</th>
-                                <th style={{ padding: '0.75rem' }}>Producto</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'center' }}>Cant.</th>
-                                <th style={{ padding: '0.75rem', textAlign: 'right' }}>Total</th>
+                <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                    <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: '0.95rem' }}>
+                        <thead style={{ backgroundColor: '#f8fafc' }}>
+                            <tr>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>Fecha</th>
+                                <th style={{ padding: '1rem', textAlign: 'left', fontWeight: 600, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>Producto</th>
+                                <th style={{ padding: '1rem', textAlign: 'center', fontWeight: 600, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>Cant.</th>
+                                <th style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, color: 'var(--text-muted)', borderBottom: '1px solid var(--border)' }}>Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {ventas.map((venta, index) => (
-                                <tr key={venta.id || index} style={{ borderBottom: '1px solid var(--border)' }}>
-                                    <td style={{ padding: '0.75rem' }}>
+                                <tr
+                                    key={venta.id || index}
+                                    style={{ transition: 'background-color 0.2s' }}
+                                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    <td style={{ padding: '1rem', borderBottom: index === ventas.length - 1 ? 'none' : '1px solid var(--border)' }}>
                                         {new Date(venta.fechaVenta).toLocaleString('es-AR')}
                                     </td>
-                                    {/* Asumiendo que el backend devuelve el objeto producto o al menos su nombre */}
-                                    <td style={{ padding: '0.75rem' }}>
+                                    <td style={{ padding: '1rem', borderBottom: index === ventas.length - 1 ? 'none' : '1px solid var(--border)' }}>
                                         {venta.nombreProducto || 'Producto desconocido'}
                                     </td>
-                                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                                    <td style={{ padding: '1rem', textAlign: 'center', borderBottom: index === ventas.length - 1 ? 'none' : '1px solid var(--border)' }}>
                                         {venta.cantidadVendida}
                                     </td>
-                                    <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 600 }}>
+                                    <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, color: 'var(--text-main)', borderBottom: index === ventas.length - 1 ? 'none' : '1px solid var(--border)' }}>
                                         {venta.montoTotal ? Number(venta.montoTotal).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : '$ 0.00'}
                                     </td>
                                 </tr>

@@ -35,4 +35,16 @@ public class Marca {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "marca_categoria", joinColumns = @JoinColumn(name = "marca_id"), inverseJoinColumns = @JoinColumn(name = "categoria_id"))
+    private java.util.List<Categoria> categorias;
+
+    public java.util.List<Categoria> getCategorias() {
+        return categorias;
+    }
+
+    public void setCategorias(java.util.List<Categoria> categorias) {
+        this.categorias = categorias;
+    }
 }

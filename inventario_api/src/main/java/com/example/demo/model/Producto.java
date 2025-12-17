@@ -64,11 +64,11 @@ public class Producto {
     @Column(name = "stock_minimo")
     private Integer stockMinimo = 5;
 
-    @ManyToOne(cascade = { jakarta.persistence.CascadeType.PERSIST, jakarta.persistence.CascadeType.MERGE })
+    @ManyToOne
     @jakarta.persistence.JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
-    @ManyToOne(cascade = { jakarta.persistence.CascadeType.PERSIST, jakarta.persistence.CascadeType.MERGE })
+    @ManyToOne
     @jakarta.persistence.JoinColumn(name = "marca_id")
     private Marca marca;
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+import { toast } from 'react-hot-toast'
 
 const ProductoForm = ({ onSuccess, productoAEditar, onActualizar, categorias = [], marcas = [] }) => {
     const [nombre, setNombre] = useState('')
@@ -11,10 +12,6 @@ const ProductoForm = ({ onSuccess, productoAEditar, onActualizar, categorias = [
     const [marcaId, setMarcaId] = useState('')
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
-    const [successMsg, setSuccessMsg] = useState(null)
-
-
 
     useEffect(() => {
         if (productoAEditar) {
@@ -31,13 +28,23 @@ const ProductoForm = ({ onSuccess, productoAEditar, onActualizar, categorias = [
     const handleSubmit = async (e) => {
         e.preventDefault()
         setLoading(true)
-        setError(null)
-        setSuccessMsg(null)
 
         if (!nombre || cantidad === '' || precio === '' || categoriaId === '' || marcaId === '') {
-            setError("Todos los campos obligatorios deben completarse")
+            toast.error("Todos los campos obligatorios deben completarse")
             setLoading(false)
             return
+        }
+
+        // Validación de Integridad de Negocio
+        if (parseFloat(precio) < parseFloat(precioCosto)) {
+            toast.error("El Precio de Venta no puede ser menor al Costo. ¡Perderías dinero!");
+            setLoading(false)
+            return;
+        }
+
+        // Validación de existencia de datos maestros
+        if (categorias.length === 0 || brandsAreEmpty(marcas)) {
+            // Fallback visual check, aunque el select estaria vacio
         }
 
         const payload = {
@@ -57,7 +64,7 @@ const ProductoForm = ({ onSuccess, productoAEditar, onActualizar, categorias = [
             } else {
                 await axios.post('/productos', payload)
 
-                setSuccessMsg("¡Producto creado con éxito!")
+                toast.success("¡Producto creado con éxito!")
                 setNombre('')
                 setCantidad('')
                 setPrecio('')
@@ -71,11 +78,40 @@ const ProductoForm = ({ onSuccess, productoAEditar, onActualizar, categorias = [
 
         } catch (err) {
             console.error("Error saving product:", err)
-            setError("Error al guardar el producto. Verifique los datos.")
+
+            let errorFeedback = "Error al guardar el producto.";
+
+            if (err.response) {
+                // El servidor respondió con un estado fuera del rango 2xx
+                const status = err.response.status;
+                const data = err.response.data;
+                const backendMessage = data?.message || (typeof data === 'string' ? data : JSON.stringify(data));
+
+                errorFeedback = `Error (${status}): ${backendMessage || 'Sin detalles del servidor'}`;
+            } else if (err.request) {
+                // La petición fue hecha pero no se recibió respuesta
+                errorFeedback = "Error de Red: No se recibió respuesta del servidor.";
+            } else {
+                // Algo pasó al configurar la petición
+                errorFeedback = `Error: ${err.message}`;
+            }
+
+            toast.error(errorFeedback, { duration: 5000 });
         } finally {
             setLoading(false)
         }
     }
+
+    // Helper para verificar marcas vacías (opcional)
+    const brandsAreEmpty = (m) => !m || m.length === 0;
+
+    // Verificar si faltan datos maestros al renderizar (solo en modo creación)
+    useEffect(() => {
+        if (!productoAEditar && !loading && (categorias.length === 0 || marcas.length === 0)) {
+            // Un toast informativo pero no bloqueante inmediatamente
+            // toast('Recuerda configurar Categorías y Marcas antes de crear productos.', { icon: 'ℹ️' });
+        }
+    }, [productoAEditar, loading, categorias.length, marcas.length]);
 
     return (
         <div className="card" style={productoAEditar ? { border: 'none', shadow: 'none', padding: 0, margin: 0 } : {}}>
@@ -83,8 +119,6 @@ const ProductoForm = ({ onSuccess, productoAEditar, onActualizar, categorias = [
                 {productoAEditar ? 'Editar Producto' : 'Nuevo Producto'}
             </h2>
 
-            {successMsg && <div className="text-success text-center">{successMsg}</div>}
-            {error && <div className="text-error text-center">{error}</div>}
 
             <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group" style={{ gridColumn: 'span 2' }}>
@@ -127,7 +161,13 @@ const ProductoForm = ({ onSuccess, productoAEditar, onActualizar, categorias = [
                         style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: '8px' }}
                     >
                         <option value="">Seleccione...</option>
-                        {marcas.map(m => (
+                        {marcas.filter(m => {
+                            if (!categoriaId) return true;
+                            // Si la marca no tiene categorías definidas, asumimos que no aplica a filtros específicos (o mostrar siempre si se desea)
+                            // Pero según requerimiento: "solo mostrar marcas vinculadas a esa categoría O a 'Otros'"
+                            if (!m.categorias || m.categorias.length === 0) return false;
+                            return m.categorias.some(c => c.id == categoriaId || c.nombre === 'Otros');
+                        }).map(m => (
                             <option key={m.id} value={m.id}>{m.nombre}</option>
                         ))}
                     </select>

@@ -1,30 +1,45 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import ProductoForm from './components/ProductoForm'
-import ProductoItem from './components/ProductoItem'
-import VentaHistorial from './components/VentaHistorial'
-import Login from './components/Login'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster, toast } from 'react-hot-toast'
+import { Loader2 } from 'lucide-react'
+
+// Context & Utils
 import { useAuth } from './context/AuthContext'
 import './App.css'
 
+// Layout & Components
+import Navbar from './components/Layout/Navbar'
+import Login from './components/Login'
+
+// Pages
+import Inventario from './pages/Inventario'
+import NuevoProducto from './pages/NuevoProducto'
+import HistorialVentas from './pages/HistorialVentas'
+import Configuracion from './pages/Configuracion'
+
 function App() {
   const { isAuthenticated, logout, loadingAuth } = useAuth()
+
+  // Estado Global de Datos
   const [productos, setProductos] = useState([])
   const [categorias, setCategorias] = useState([])
   const [marcas, setMarcas] = useState([])
+
+  // Estado UI Global
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  // Estado para disparar recargas en componentes hijos
   const [refreshHistory, setRefreshHistory] = useState(0)
-  const [searchTerm, setSearchTerm] = useState('')
 
   const fetchData = async () => {
     setLoading(true)
     setError(null)
     try {
-      const urlProducts = searchTerm ? `/productos?search=${searchTerm}` : '/productos'
-
+      // Cargamos todo de una vez
       const [prodRes, catRes, marRes] = await Promise.all([
-        axios.get(urlProducts),
+        axios.get('/productos'),
         axios.get('/categorias'),
         axios.get('/marcas')
       ])
@@ -40,25 +55,28 @@ function App() {
     }
   }
 
+  // Carga inicial al autenticarse
   useEffect(() => {
     if (loadingAuth) return;
-
     if (isAuthenticated) {
       fetchData()
     }
-  }, [searchTerm, isAuthenticated, loadingAuth])
+  }, [isAuthenticated, loadingAuth])
+
+  // --- Manejadores Globales (passed down to pages) ---
 
   const handleVender = async (id, cantidad) => {
     try {
       await axios.put(`/productos/${id}/vender?cantidad=${cantidad}`, {})
-      fetchData()
-      setRefreshHistory(prev => prev + 1)
+      fetchData() // Recarga productos
+      setRefreshHistory(prev => prev + 1) // Avisa al historial
+      toast.success("Venta registrada con éxito")
     } catch (err) {
       if (err.response && err.response.status === 400) {
-        alert(err.response.data)
+        toast.error(err.response.data)
       } else {
         console.error("Error selling product:", err)
-        alert("Error al registrar la venta.")
+        toast.error("Error al registrar la venta.")
       }
     }
   }
@@ -68,11 +86,11 @@ function App() {
 
     try {
       await axios.delete(`/productos/${id}`)
-      // Recargar lista tras eliminación exitosa
       fetchData()
+      toast.success("Producto eliminado correctamente")
     } catch (err) {
       console.error("Error deleting product:", err)
-      alert("Error al eliminar el producto. Inténtelo de nuevo.")
+      toast.error("Error al eliminar el producto. Inténtelo de nuevo.")
     }
   }
 
@@ -80,83 +98,104 @@ function App() {
     try {
       await axios.put(`/productos/${id}`, productoActualizado)
       fetchData()
+      toast.success("Producto actualizado")
     } catch (err) {
       console.error("Error updating product:", err)
-      alert("Error al actualizar el producto.")
+      toast.error("Error al actualizar el producto.")
     }
   }
 
+  // --- Renderizado Condicional de Auth ---
+
   if (loadingAuth) {
-    return <div className="loading" style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Cargando sistema...</div>
+    return <div className="loading" style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <Loader2 className="animate-spin" size={48} />
+    </div>
   }
 
   if (!isAuthenticated) {
     return <Login />
   }
 
+  // Si está autenticado, mostramos el Router con el Layout principal
   return (
-    <div className="container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h1 style={{ margin: 0 }}>Inventario de Productos</h1>
-        <button onClick={logout} style={{ backgroundColor: '#64748b', color: 'white' }}>
-          Logout
-        </button>
-      </div>
+    <Router>
+      <div className="app-container">
+        <Toaster position="top-right" />
+        <Navbar />
 
-      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
-        <input
-          type="text"
-          placeholder="Buscar producto..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            width: '100%',
-            maxWidth: '400px',
-            padding: '0.75rem',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            fontSize: '1rem'
-          }}
-        />
-      </div>
-
-      <div style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.2rem' }} className="text-muted">
-        Valor Total del Inventario: {productos.reduce((acc, curr) => acc + (curr.precio * curr.stock), 0).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}
-      </div>
-
-      <ProductoForm
-        onSuccess={fetchData}
-        categorias={categorias}
-        marcas={marcas}
-      />
-
-      {loading && <p className="loading" style={{ textAlign: 'center', margin: '2rem 0' }}>Cargando datos del sistema...</p>}
-
-      {error && (
-        <div className="text-error text-center" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          {error}
-          <button onClick={fetchData} className="btn-primary" style={{ maxWidth: '200px' }}>Reintentar</button>
+        {/* Header con Logout rápido */}
+        <div style={{ position: 'absolute', top: '1.5rem', right: '2rem' }}>
+          <button onClick={logout} style={{ fontSize: '0.8rem', padding: '0.5rem 1rem', background: '#e2e8f0', color: '#475569' }}>
+            Cerrar Sesión
+          </button>
         </div>
-      )}
 
-      {!loading && !error && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-          {productos.map((producto, index) => (
-            <ProductoItem
-              key={producto.id || index}
-              producto={producto}
-              onVender={handleVender}
-              onEliminar={handleDelete}
-              onActualizar={handleActualizar}
-              categorias={categorias}
-              marcas={marcas}
-            />
-          ))}
-        </div>
-      )}
+        {/* Manejo de estados de carga/error globales */}
+        {loading && (
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '3rem 0' }}>
+            <Loader2 className="animate-spin" size={40} color="var(--primary)" />
+          </div>
+        )}
 
-      <VentaHistorial shouldRefresh={refreshHistory} />
-    </div>
+        {error && (
+          <div className="text-error text-center" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            {error}
+            <button onClick={fetchData} className="btn-primary" style={{ maxWidth: '200px' }}>Reintentar Sincronización</button>
+          </div>
+        )}
+
+        {/* Contenido principal enrutado */}
+        {!loading && !error && (
+          <div className="container">
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <Inventario
+                    productos={productos}
+                    categorias={categorias}
+                    marcas={marcas}
+                    loading={loading}
+                    error={error}
+                    onVender={handleVender}
+                    onEliminar={handleDelete}
+                    onActualizar={handleActualizar}
+                  />
+                }
+              />
+              <Route
+                path="/nuevo"
+                element={
+                  <NuevoProducto
+                    fetchData={fetchData}
+                    categorias={categorias}
+                    marcas={marcas}
+                  />
+                }
+              />
+              <Route
+                path="/historial"
+                element={
+                  <HistorialVentas refreshTrigger={refreshHistory} />
+                }
+              />
+              <Route
+                path="/configuracion"
+                element={
+                  <Configuracion
+                    categorias={categorias}
+                    marcas={marcas}
+                    fetchData={fetchData}
+                  />
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        )}
+      </div>
+    </Router>
   )
 }
 
