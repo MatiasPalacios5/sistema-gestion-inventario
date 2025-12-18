@@ -12,28 +12,21 @@ import java.util.List;
 @RequestMapping("/categorias")
 public class CategoriaController {
 
-    private final com.example.demo.service.CategoriaService categoriaService;
+    private final CategoriaRepository categoriaRepository;
 
-    public CategoriaController(com.example.demo.service.CategoriaService categoriaService) {
-        this.categoriaService = categoriaService;
+    public CategoriaController(CategoriaRepository categoriaRepository) {
+        this.categoriaRepository = categoriaRepository;
     }
 
     @GetMapping
     public List<Categoria> obtenerTodas() {
-        return categoriaService.findAll();
+        return categoriaRepository.findAll();
     }
 
     @org.springframework.web.bind.annotation.PostMapping
     public Categoria crearCategoria(@org.springframework.web.bind.annotation.RequestBody Categoria categoria) {
-        Categoria nueva = categoriaService.save(categoria);
+        Categoria nueva = categoriaRepository.save(categoria);
         System.out.println("Nueva Categoría creada con éxito: " + nueva.getNombre());
         return nueva;
-    }
-
-    @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
-    public org.springframework.http.ResponseEntity<Void> eliminarCategoria(
-            @org.springframework.web.bind.annotation.PathVariable Long id) {
-        categoriaService.deleteCategoria(id);
-        return org.springframework.http.ResponseEntity.noContent().build();
     }
 }

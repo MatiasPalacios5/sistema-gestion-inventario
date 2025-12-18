@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster, toast } from 'react-hot-toast'
@@ -33,7 +33,7 @@ function App() {
   // Estado para disparar recargas en componentes hijos
   const [refreshHistory, setRefreshHistory] = useState(0)
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -53,7 +53,7 @@ function App() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // Carga inicial al autenticarse
   useEffect(() => {
@@ -61,7 +61,7 @@ function App() {
     if (isAuthenticated) {
       fetchData()
     }
-  }, [isAuthenticated, loadingAuth])
+  }, [isAuthenticated, loadingAuth, fetchData])
 
   // --- Manejadores Globales (passed down to pages) ---
 
@@ -131,13 +131,6 @@ function App() {
           </button>
         </div>
 
-        {/* Manejo de estados de carga/error globales */}
-        {loading && (
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '3rem 0' }}>
-            <Loader2 className="animate-spin" size={40} color="var(--primary)" />
-          </div>
-        )}
-
         {error && (
           <div className="text-error text-center" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
             {error}
@@ -146,54 +139,53 @@ function App() {
         )}
 
         {/* Contenido principal enrutado */}
-        {!loading && !error && (
-          <div className="container">
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Inventario
-                    productos={productos}
-                    categorias={categorias}
-                    marcas={marcas}
-                    loading={loading}
-                    error={error}
-                    onVender={handleVender}
-                    onEliminar={handleDelete}
-                    onActualizar={handleActualizar}
-                  />
-                }
-              />
-              <Route
-                path="/nuevo"
-                element={
-                  <NuevoProducto
-                    fetchData={fetchData}
-                    categorias={categorias}
-                    marcas={marcas}
-                  />
-                }
-              />
-              <Route
-                path="/historial"
-                element={
-                  <HistorialVentas refreshTrigger={refreshHistory} />
-                }
-              />
-              <Route
-                path="/configuracion"
-                element={
-                  <Configuracion
-                    categorias={categorias}
-                    marcas={marcas}
-                    fetchData={fetchData}
-                  />
-                }
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </div>
-        )}
+        <div className="container">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Inventario
+                  productos={productos}
+                  categorias={categorias}
+                  marcas={marcas}
+                  loading={loading}
+                  error={error}
+                  onVender={handleVender}
+                  onEliminar={handleDelete}
+                  onActualizar={handleActualizar}
+                  onRefresh={fetchData}
+                />
+              }
+            />
+            <Route
+              path="/nuevo"
+              element={
+                <NuevoProducto
+                  fetchData={fetchData}
+                  categorias={categorias}
+                  marcas={marcas}
+                />
+              }
+            />
+            <Route
+              path="/historial"
+              element={
+                <HistorialVentas refreshTrigger={refreshHistory} />
+              }
+            />
+            <Route
+              path="/configuracion"
+              element={
+                <Configuracion
+                  categorias={categorias}
+                  marcas={marcas}
+                  fetchData={fetchData}
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   )

@@ -91,9 +91,12 @@ public class ProductoServiceImpl implements ProductoService {
         // 2. Crear y guardar el registro de venta
         Venta nuevaVenta = new Venta();
         nuevaVenta.setNombreProducto(producto.getNombre());
+        nuevaVenta.setProductoId(producto.getId());
         nuevaVenta.setCantidadVendida(cantidad);
         nuevaVenta.setPrecioUnitario(precioUnitario);
         nuevaVenta.setMontoTotal(montoTotal);
+        // Guardamos también el precio de costo para cálculo de utilidad real
+        nuevaVenta.setCostoUnitario(producto.getPrecioCosto() != null ? producto.getPrecioCosto() : 0.0);
 
         ventaRepository.save(nuevaVenta);
 

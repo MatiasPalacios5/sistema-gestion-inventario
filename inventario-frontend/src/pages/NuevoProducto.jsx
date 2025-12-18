@@ -17,6 +17,7 @@ const NuevoProducto = ({ fetchData, categorias, marcas }) => {
                 onSuccess={handleSuccess}
                 categorias={categorias}
                 marcas={marcas}
+                onRefreshData={fetchData}
             />
         </div>
     );

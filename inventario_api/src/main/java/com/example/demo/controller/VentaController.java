@@ -12,10 +12,10 @@ import java.util.List;
 @RequestMapping("/ventas")
 public class VentaController {
 
-    private final VentaRepository ventaRepository;
+    private final com.example.demo.service.VentaService ventaService;
 
-    public VentaController(VentaRepository ventaRepository) {
-        this.ventaRepository = ventaRepository;
+    public VentaController(com.example.demo.service.VentaService ventaService) {
+        this.ventaService = ventaService;
     }
 
     /**
@@ -27,6 +27,11 @@ public class VentaController {
      */
     @GetMapping
     public List<Venta> obtenerTodasLasVentas() {
-        return ventaRepository.findAll();
+        return ventaService.obtenerTodas();
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+    public void eliminarVenta(@org.springframework.web.bind.annotation.PathVariable Long id) {
+        ventaService.eliminarVenta(id);
     }
 }

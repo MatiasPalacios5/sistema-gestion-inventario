@@ -13,17 +13,28 @@ public class Venta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime fechaVenta;
 
+    @PrePersist
+    protected void onCreate() {
+        if (fechaVenta == null) {
+            fechaVenta = LocalDateTime.now();
+        }
+    }
+
     private String nombreProducto;
+
+    @Column(name = "producto_id")
+    private Long productoId;
 
     private int cantidadVendida;
 
     private double precioUnitario;
 
     private double montoTotal;
+
+    private Double costoUnitario;
 
     public Venta() {
     }
@@ -59,6 +70,14 @@ public class Venta {
         this.nombreProducto = nombreProducto;
     }
 
+    public Long getProductoId() {
+        return productoId;
+    }
+
+    public void setProductoId(Long productoId) {
+        this.productoId = productoId;
+    }
+
     public int getCantidadVendida() {
         return cantidadVendida;
     }
@@ -81,5 +100,13 @@ public class Venta {
 
     public void setMontoTotal(double montoTotal) {
         this.montoTotal = montoTotal;
+    }
+
+    public Double getCostoUnitario() {
+        return costoUnitario;
+    }
+
+    public void setCostoUnitario(Double costoUnitario) {
+        this.costoUnitario = costoUnitario;
     }
 }

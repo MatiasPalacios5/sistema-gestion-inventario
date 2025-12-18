@@ -15,14 +15,11 @@ public class MarcaService {
 
     private final MarcaRepository marcaRepository;
     private final CategoriaRepository categoriaRepository;
-    private final com.example.demo.repository.ProductoRepository productoRepository;
 
     @Autowired
-    public MarcaService(MarcaRepository marcaRepository, CategoriaRepository categoriaRepository,
-            com.example.demo.repository.ProductoRepository productoRepository) {
+    public MarcaService(MarcaRepository marcaRepository, CategoriaRepository categoriaRepository) {
         this.marcaRepository = marcaRepository;
         this.categoriaRepository = categoriaRepository;
-        this.productoRepository = productoRepository;
     }
 
     public List<Marca> findAll() {
@@ -50,12 +47,5 @@ public class MarcaService {
 
     public Optional<Marca> findById(Long id) {
         return marcaRepository.findById(id);
-    }
-
-    public void deleteMarca(Long id) {
-        if (productoRepository.countByMarcaId(id) > 0) {
-            throw new RuntimeException("No se puede eliminar la marca porque tiene productos vinculados");
-        }
-        marcaRepository.deleteById(id);
     }
 }

@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
-import { DollarSign, TrendingUp, ShoppingBag, Loader2, Calendar, Search, ArrowUp, ArrowDown } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import { DollarSign, TrendingUp, ShoppingBag, Loader2, Calendar, Search, ArrowUp, ArrowDown, Trash2 } from 'lucide-react'
+import { formatCurrency } from '../utils/formatters'
 
 // Reutilizamos el componente de Tarjeta para consistencia visual
 const MetricCard = ({ title, value, icon, color, isCurrency = true }) => {
@@ -43,7 +45,7 @@ const MetricCard = ({ title, value, icon, color, isCurrency = true }) => {
             </div>
             <strong style={{ fontSize: '1.75rem', color: '#1e293b', fontWeight: 700 }}>
                 {isCurrency
-                    ? value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })
+                    ? formatCurrency(value)
                     : value}
             </strong>
         </div>
@@ -90,6 +92,18 @@ const VentaHistorial = ({ shouldRefresh }) => {
     const getSortIcon = (key) => {
         if (sortConfig.key !== key) return null;
         return sortConfig.direction === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />;
+    };
+
+    const handleAnular = async (id) => {
+        if (!window.confirm("¿Estás seguro de anular esta venta? El stock será devuelto al inventario.")) return;
+        try {
+            await axios.delete(`/ventas/${id}`);
+            toast.success("Venta anulada y stock restaurado");
+            fetchVentas(); // Recargar datos para actualizar stock y métricas
+        } catch (error) {
+            console.error("Error al anular venta:", error);
+            toast.error("Error al anular la venta");
+        }
     };
 
     // Lógica de filtrado y ordenamiento unificada
@@ -165,11 +179,12 @@ const VentaHistorial = ({ shouldRefresh }) => {
 
         return ventasProcesadas.reduce((acc, venta) => {
             const monto = parseFloat(venta.montoTotal) || 0;
-            const precioCosto = venta.precioCostoSnapshot || (venta.producto && venta.producto.precioCosto) || 0;
+            // Prioridad: costoUnitario (histórico real en venta) > precioCostoSnapshot (viejo) > producto.precioCosto (actual)
+            const costoUnitario = venta.costoUnitario !== undefined ? parseFloat(venta.costoUnitario) : (venta.precioCostoSnapshot || (venta.producto && venta.producto.precioCosto) || 0);
             const cantidad = venta.cantidadVendida || 0;
 
             acc.totalVendido += monto;
-            const costoTotalVenta = precioCosto * cantidad;
+            const costoTotalVenta = costoUnitario * cantidad;
             acc.utilidadReal += (monto - costoTotalVenta);
             acc.nroOperaciones += 1;
             return acc;
@@ -355,6 +370,9 @@ const VentaHistorial = ({ shouldRefresh }) => {
                                             Total {getSortIcon('montoTotal')}
                                         </div>
                                     </th>
+                                    <th style={{ ...thStyle, textAlign: 'center', width: '80px', cursor: 'default' }}>
+                                        Acciones
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -375,7 +393,28 @@ const VentaHistorial = ({ shouldRefresh }) => {
                                             {venta.cantidadVendida}
                                         </td>
                                         <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 600, color: '#0f172a', borderBottom: '1px solid #f1f5f9' }}>
-                                            {venta.montoTotal ? Number(venta.montoTotal).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' }) : '$ 0.00'}
+                                            {formatCurrency(venta.montoTotal)}
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'center', borderBottom: '1px solid #f1f5f9' }}>
+                                            <button
+                                                onClick={() => handleAnular(venta.id)}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    color: 'var(--danger)', // Asumiendo que var(--danger) existe, si no usa '#ef4444'
+                                                    padding: '4px',
+                                                    borderRadius: '4px',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}
+                                                title="Anular Venta"
+                                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            >
+                                                <Trash2 size={18} color="#ef4444" />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

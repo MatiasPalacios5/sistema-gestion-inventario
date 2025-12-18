@@ -28,8 +28,4 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
      * @return Lista de productos encontrados.
      */
     java.util.List<Producto> findByNombreContainingIgnoreCase(String nombre);
-
-    long countByMarcaId(Long marcaId);
-
-    long countByCategoriaId(Long categoriaId);
 }

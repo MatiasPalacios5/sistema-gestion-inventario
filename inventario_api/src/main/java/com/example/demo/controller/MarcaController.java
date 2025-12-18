@@ -40,13 +40,5 @@ public class MarcaController {
                     return org.springframework.http.ResponseEntity.ok(marcaService.save(existingMarca));
                 })
                 .orElse(org.springframework.http.ResponseEntity.notFound().build());
-
-    }
-
-    @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
-    public org.springframework.http.ResponseEntity<Void> eliminarMarca(
-            @org.springframework.web.bind.annotation.PathVariable Long id) {
-        marcaService.deleteMarca(id);
-        return org.springframework.http.ResponseEntity.noContent().build();
     }
 }
